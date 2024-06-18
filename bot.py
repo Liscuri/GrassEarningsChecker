@@ -1,7 +1,7 @@
-# Discord Utils
 import discord
 from discord.ext import commands, tasks
 import json
+import asyncio
 
 # Selenium Utils
 from selenium import webdriver
@@ -20,10 +20,14 @@ from PIL import Image
 from io import BytesIO
 import time
 import schedule
+import os
+import datetime
 
+# Load configuration
 with open("config.json", "r") as f:
     config = json.load(f)
 
+# Initialize bot
 bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
 bot.remove_command("help")
 
@@ -31,12 +35,13 @@ bot.remove_command("help")
 @bot.event
 async def on_ready():
     print('Bot is ready to show your Grass earnings!')
-    await bot.change_presence(status=discord.Status.offline)
-    await screenshot_schedule()
+    await bot.change_presence(status=discord.Status.online)
+    await bot.change_presence(activity=discord.Game(name="Grass Earnings - by brayden.nl"))
+    bot.loop.create_task(screenshot_schedule())
 
 
 # Function to capture Grass dashboard screenshots
-def capture_grass_dashboard_screenshots(username, password):
+async def capture_grass_dashboard_screenshots(username, password):
     options = Options()
     options.add_argument("--headless")
     options.add_argument("--window-size=1920,1080")
@@ -110,44 +115,44 @@ def capture_grass_dashboard_screenshots(username, password):
 
 
 async def screenshot_schedule():
-    print("Scheduled task running...")
+    while True:
+        print("Scheduled task running...")
 
-    username = config["USERNAME"]
-    password = config["PASSWORD"]
-    capture_grass_dashboard_screenshots(username, password)
+        username = config["USERNAME"]
+        password = config["PASSWORD"]
+        await capture_grass_dashboard_screenshots(username, password)
 
-    channel = bot.get_channel(config["CHANNEL"])
-    if channel:
-        embed1 = discord.Embed(title="Earnings 🚀", color=0x00ff00)
-        embed1.set_image(url="attachment://screenshot1.png")
-        embed1.set_footer(text="Grass Earnings Checker Bot - By brayden.nl")
+        channel = bot.get_channel(config["CHANNEL"])
+        if channel:
+            embed1 = discord.Embed(title="Earnings 🚀", color=0x00ff00)
+            embed1.set_image(url="attachment://screenshot1.png")
+            embed1.set_footer(text="Grass Earnings Checker Bot - By brayden.nl")
 
-        embed2 = discord.Embed(title="Statistics 📊", color=0x00ff00)
-        embed2.set_image(url="attachment://screenshot2.png")
-        embed2.set_footer(text="Grass Earnings Checker Bot - By brayden.nl")
+            embed2 = discord.Embed(title="Statistics 📊", color=0x00ff00)
+            embed2.set_image(url="attachment://screenshot2.png")
+            embed2.set_footer(text="Grass Earnings Checker Bot - By brayden.nl")
 
-        embed3 = discord.Embed(title="Socials 📢", color=0x00ff00)
-        embed3.add_field(name="Twitter", value="[Follow me on X](https://x.com/BraydenTweeting)", inline=False)
-        embed3.add_field(name="GitHub", value="[Check out my GitHub](https://github.com/Liscuri)", inline=False)
-        embed3.add_field(name="Discord", value="[Join my Discord](https://discord.gg/Liscuri)", inline=False)
-        embed3.add_field(name="Grass", value="[Check out Grass](https://app.getgrass.io/register/?referralCode=BgxJIZyS1BvmkUq)", inline=False)
-        embed3.set_footer(text="Grass Earnings Checker Bot - By brayden.nl")
+            embed3 = discord.Embed(title="Socials 📢", color=0x00ff00)
+            embed3.add_field(name="Twitter", value="[Follow me on X](https://x.com/BraydenTweeting)", inline=False)
+            embed3.add_field(name="GitHub", value="[Check out my GitHub](https://github.com/Liscuri)", inline=False)
+            embed3.add_field(name="Discord", value="[Join my Discord](https://discord.gg/Liscuri)", inline=False)
+            embed3.add_field(name="Grass",
+                             value="[Check out Grass](https://app.getgrass.io/register/?referralCode=BgxJIZyS1BvmkUq)",
+                             inline=False)
+            embed3.set_footer(text=f"Time sent: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
-        # Send embeds with files attached
-        with open('screenshot1.png', 'rb') as f1, open('screenshot2.png', 'rb') as f2:
-            file1 = discord.File(f1, filename='screenshot1.png')
-            file2 = discord.File(f2, filename='screenshot2.png')
-            await channel.send(embed=embed1, file=file1)
-            await channel.send(embed=embed2, file=file2)
-            await channel.send(embed=embed3)
-
-
-schedule.every(10).minutes.do(screenshot_schedule)
-
-
-@tasks.loop(seconds=60)
-async def background_task():
-    schedule.run_pending()
+            # Send embeds with files attached
+            with open('screenshot1.png', 'rb') as f1, open('screenshot2.png', 'rb') as f2:
+                file1 = discord.File(f1, filename='screenshot1.png')
+                file2 = discord.File(f2, filename='screenshot2.png')
+                await channel.send(embed=embed1, file=file1)
+                await channel.send(embed=embed2, file=file2)
+                await channel.send(embed=embed3)
+                f1.close()
+                f2.close()
+                os.remove('screenshot1.png')
+                os.remove('screenshot2.png')
+        await asyncio.sleep(300)
 
 
 bot.run(config["TOKEN"])

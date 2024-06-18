@@ -1,10 +1,7 @@
 
 # Grass Earnings Checker 🚀
 
-A easy to use Discord bot to keep track of your earnings on https://app.getgrass.io/. Updates each 10 minutes with a screenshot of your earnings and statistics
-
-
-
+A easy to use Discord bot to keep track of your earnings on https://app.getgrass.io/. Updates every 5 minutes with a screenshot of your earnings and statistics
 
 ## How to run 📝
 
@@ -44,8 +41,13 @@ Start the bot
   python bot.py
 ```
 
-
-## Screenshot
+## Screenshot 📷
 
 ![Screenshot](https://i.imgur.com/94KM2Ns.png)
+
+## Technical Information 🛠️
+
+| Python 🐍 | Version 3.12 |
+|:--------|:-------------|
+
 
